@@ -5,24 +5,85 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cli
 
 import (
+	"context"
 	"fmt"
+	"io"
+	"net"
+	"os"
 
+	"github.com/0xdod/imageuploadservice/internal/grpc"
 	"github.com/spf13/cobra"
 )
 
 // uploadCmd represents the upload command
 var uploadCmd = &cobra.Command{
 	Use:   "upload",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Upload an image to cloud storage",
+	Long: `Upload an image image-uploader-cli
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("upload called")
+USAGE:
+   image-uploader-cli upload ./image.png ./image-2.png
+.`,
+	Args: cobra.MinimumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		locations := make(map[string]string)
+
+		for _, arg := range args {
+			loc, err := doUpload(arg)
+
+			if err != nil {
+				fmt.Fprintf(os.Stdout, "cannot upload %q: %v", arg, err)
+			} else {
+				locations[arg] = loc
+			}
+		}
+
+		if len(locations) > 0 {
+			fmt.Fprintln(os.Stdout, "\nUploaded images: ")
+			fmt.Fprintln(os.Stdout)
+			for k, v := range locations {
+				fmt.Fprintf(os.Stdout, "%s: %s\n", k, v)
+			}
+		}
+
+		return nil
 	},
+}
+
+func doUpload(arg string) (string, error) {
+	file, err := os.Open(arg)
+
+	if err != nil {
+		return "", fmt.Errorf("cannot open file: %v", err)
+	}
+
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+
+	if err != nil {
+		return "", fmt.Errorf("cannot read file: %v", err)
+	}
+
+	c := grpc.NewClient()
+
+	if err = c.DialServer(net.JoinHostPort("127.0.0.1", "50051")); err != nil {
+		return "", fmt.Errorf("cannot connect to server: %v", err)
+	}
+
+	defer c.Close()
+
+	fmt.Fprintf(os.Stdout, "Uploading image %q in progress...\n", file.Name())
+
+	location, err := c.UploadImage(context.Background(), file.Name(), data)
+
+	if err != nil {
+		return "", fmt.Errorf("cannot upload image: %v", err)
+	}
+
+	fmt.Fprintf(os.Stdout, "Uploaded image %q to: %q\n", file.Name(), location)
+
+	return location, nil
 }
 
 func init() {

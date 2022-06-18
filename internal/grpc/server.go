@@ -1,11 +1,12 @@
 package grpc
 
 import (
-	context "context"
+	"context"
 	"fmt"
 	"log"
 	"net"
 
+	"github.com/0xdod/imageuploadservice/internal/imageuploader"
 	"google.golang.org/grpc"
 )
 
@@ -27,11 +28,22 @@ func (s *Server) Start(port string) error {
 		return err
 	}
 
+	// Register server method (actions the server will do)
+	RegisterImageUploaderServer(s.srv, &Server{})
+
 	log.Printf("server listening at %v", lis.Addr())
 
 	return s.srv.Serve(lis)
 }
 
 func (s *Server) Upload(ctx context.Context, in *Image) (*ImageUploadReply, error) {
-	return &ImageUploadReply{Location: "hello world"}, nil
+	up := imageuploader.NewS3Uploader()
+
+	loc, err := up.Upload(ctx, in.Body, in.Name)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &ImageUploadReply{Location: loc}, nil
 }

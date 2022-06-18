@@ -1,5 +1,7 @@
-package imagestorage
+package imageuploader
+
+import "context"
 
 type ImageUploader interface {
-	Upload(data []byte, name string) (string, error)
+	Upload(ctx context.Context, data []byte, name string) (string, error)
 }

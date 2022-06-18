@@ -1,3 +1,11 @@
+/*
+Copyright © 2022 Damilola Dolor damiloladolor@gmail.com
+
+*/
 package main
 
-func main() {}
+import "github.com/0xdod/imageuploadservice/internal/cli"
+
+func main() {
+	cli.Execute()
+}

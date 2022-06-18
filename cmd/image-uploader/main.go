@@ -34,11 +34,31 @@ func init() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+
+	setAWSEnv()
 }
 
 func main() {
 	s := grpc.NewServer()
-	if err := s.Start(viper.GetString("port")); err != nil {
+	if err := s.Start(viper.GetString("PORT")); err != nil {
 		log.Fatalf("cannot start server: %v", err)
+	}
+}
+
+func setAWSEnv() {
+	if _, ok := os.LookupEnv("AWS_ACCESS_KEY_ID"); !ok {
+		os.Setenv("AWS_ACCESS_KEY_ID", viper.GetString("AWSAccessKeyID"))
+	}
+
+	if _, ok := os.LookupEnv("AWS_SECRET_ACCESS_KEY"); !ok {
+		os.Setenv("AWS_SECRET_ACCESS_KEY", viper.GetString("AWSSecretKey"))
+	}
+
+	if _, ok := os.LookupEnv("AWS_REGION"); !ok {
+		os.Setenv("AWS_REGION", viper.GetString("AWSRegion"))
+	}
+
+	if _, ok := os.LookupEnv("AWS_ACCESS_KEY_ID"); !ok {
+		os.Setenv("AWS_ACCESS_KEY_ID", viper.GetString("AWSAccessKeyID"))
 	}
 }
