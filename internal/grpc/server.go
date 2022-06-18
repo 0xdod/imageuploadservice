@@ -10,6 +10,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+var uploader imageuploader.ImageUploader
+
 type Server struct {
 	srv *grpc.Server
 	UnimplementedImageUploaderServer
@@ -22,6 +24,8 @@ func NewServer() *Server {
 }
 
 func (s *Server) Start(port string) error {
+	uploader = imageuploader.NewS3Uploader()
+
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 
 	if err != nil {
@@ -37,9 +41,7 @@ func (s *Server) Start(port string) error {
 }
 
 func (s *Server) Upload(ctx context.Context, in *Image) (*ImageUploadReply, error) {
-	up := imageuploader.NewS3Uploader()
-
-	loc, err := up.Upload(ctx, in.Body, in.Name)
+	loc, err := uploader.Upload(ctx, in.Body, in.Name)
 
 	if err != nil {
 		return nil, err

@@ -1,7 +1,12 @@
+# GRPC Server Port
 PORT: 50051
+# AWS Credentials
 AWSAccessKeyID:
 AWSSecretKey:
 AWSRegion:
+# AWSBucket root endpoint e.g "https://bucketname.s3.amazonaws.com"
 S3EndpointURL:
+# Optional folder prefix to upload images to
 S3Prefix:
+# Name of S3 Bucket
 S3BucketName:
