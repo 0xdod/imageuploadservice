@@ -1,0 +1,7 @@
+PORT: 50051
+AWSAccessKeyID:
+AWSSecretKey:
+AWSRegion:
+S3EndpointURL:
+S3Prefix:
+S3BucketName:
