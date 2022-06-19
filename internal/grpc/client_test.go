@@ -35,20 +35,16 @@ func TestClient_UploadImage(t *testing.T) {
 }
 
 func TestClient_DialServer(t *testing.T) {
-	type args struct {
-		addr string
-	}
 	tests := []struct {
 		name    string
 		c       *Client
-		args    args
 		wantErr bool
 	}{
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.c.DialServer(tt.args.addr); (err != nil) != tt.wantErr {
+			if err := tt.c.DialServer(); (err != nil) != tt.wantErr {
 				t.Errorf("Client.DialServer() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

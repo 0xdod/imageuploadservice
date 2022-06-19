@@ -16,6 +16,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// type Uploader interface {
+// 	UploadImage(context.Context, string, []byte) (string, error)
+// }
+
+// type imageUploader struct {
+// }
+
 // uploadCmd represents the upload command
 var uploadCmd = &cobra.Command{
 	Use:   "upload",
@@ -96,9 +103,11 @@ func doUpload(arg string) (string, error) {
 		return "", fmt.Errorf("cannot read file: %v", err)
 	}
 
-	c := grpc.NewClient()
+	c := &grpc.Client{
+		Addr: net.JoinHostPort("127.0.0.1", "50051"),
+	}
 
-	if err = c.DialServer(net.JoinHostPort("127.0.0.1", "50051")); err != nil {
+	if err = c.DialServer(); err != nil {
 		return "", fmt.Errorf("cannot connect to server: %v", err)
 	}
 

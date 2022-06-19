@@ -11,6 +11,8 @@ The two binaries are located in the `/cmd` folder.
 - Start the server
 - Use the CLI to upload images
 
+The `run-server.sh` and `run-cli.sh` scripts contains commands to help run the server and upload the two images in the `/assets` directory. You open two terminals, make sure .config.yaml variables are set and run the `./run-server.sh` command on one terminal and run `run-cli.sh` on the second terminal once the server is up and running.
+
 ### Server
 
 To run the grpc server, create the config file `.config.yaml` check the `.config-sample.yaml` file.
@@ -21,5 +23,13 @@ The cli has only one command `upload` which can take an arbitary number of argum
 
 ```bash
 [USAGE]:
-    $ image-uploader-cli assets/image-1.jpg assets/image-2.png
+    $ image-uploader-cli upload assets/image-1.jpg assets/image-2.png
+```
+
+### Running Tests
+
+running automated tests
+
+```bash
+make test
 ```

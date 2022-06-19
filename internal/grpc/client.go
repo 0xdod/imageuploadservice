@@ -8,17 +8,18 @@ import (
 )
 
 type Client struct {
+	Addr   string
 	conn   *grpc.ClientConn
 	client ImageUploaderClient
 }
 
-func NewClient() *Client {
-	return &Client{}
+func NewClient(addr string) *Client {
+	return &Client{Addr: addr}
 }
 
-func (c *Client) DialServer(addr string) error {
+func (c *Client) DialServer() error {
 	// Set up a connection to the server.
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(c.Addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		return err

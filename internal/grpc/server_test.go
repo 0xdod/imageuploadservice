@@ -7,26 +7,26 @@ import (
 	"testing"
 )
 
-// func TestServer_Start(t *testing.T) {
-// 	type args struct {
-// 		port string
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		s       *Server
-// 		args    args
-// 		wantErr bool
-// 	}{
-// 		// TODO: Add test cases.
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			if err := tt.s.Start(tt.args.port); (err != nil) != tt.wantErr {
-// 				t.Errorf("Server.Start() error = %v, wantErr %v", err, tt.wantErr)
-// 			}
-// 		})
-// 	}
-// }
+func TestServer_Start(t *testing.T) {
+	type args struct {
+		port string
+	}
+	tests := []struct {
+		name    string
+		s       *Server
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.s.Start(tt.args.port); (err != nil) != tt.wantErr {
+				t.Errorf("Server.Start() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
 
 func TestServer_Upload(t *testing.T) {
 	type args struct {
