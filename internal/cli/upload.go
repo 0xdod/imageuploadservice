@@ -1,5 +1,5 @@
 /*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
+Copyright © 2022 Damilola Dolor damiloladolor@gmail.com
 
 */
 package cli
@@ -10,6 +10,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"sync"
 
 	"github.com/0xdod/imageuploadservice/internal/grpc"
 	"github.com/spf13/cobra"
@@ -19,35 +20,65 @@ import (
 var uploadCmd = &cobra.Command{
 	Use:   "upload",
 	Short: "Upload an image to cloud storage",
-	Long: `Upload an image image-uploader-cli
+	Long: `Upload an image
 
 USAGE:
    image-uploader-cli upload ./image.png ./image-2.png
 .`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		locations := make(map[string]string)
-
-		for _, arg := range args {
-			loc, err := doUpload(arg)
-
-			if err != nil {
-				fmt.Fprintf(os.Stdout, "cannot upload %q: %v", arg, err)
-			} else {
-				locations[arg] = loc
-			}
+		type UploadResult struct {
+			locations map[string]string
+			mu        sync.Mutex
 		}
 
-		if len(locations) > 0 {
+		res := UploadResult{locations: make(map[string]string)}
+
+		var wg sync.WaitGroup
+
+		for i, arg := range args {
+			wg.Add(1)
+			i := i + 1
+			go func(arg string) {
+				defer wg.Done()
+				loc, err := doUpload(arg)
+
+				if err != nil {
+					fmt.Fprintf(os.Stdout, "cannot upload %q: %v", arg, err)
+				} else {
+					res.mu.Lock()
+					defer res.mu.Unlock()
+					res.locations[fmt.Sprintf("%d. %s", i, arg)] = loc
+				}
+			}(arg)
+		}
+
+		wg.Wait()
+
+		if len(res.locations) > 0 {
 			fmt.Fprintln(os.Stdout, "\nUploaded images: ")
 			fmt.Fprintln(os.Stdout)
-			for k, v := range locations {
+			for k, v := range res.locations {
 				fmt.Fprintf(os.Stdout, "%s: %s\n", k, v)
 			}
 		}
 
 		return nil
 	},
+}
+
+func init() {
+	rootCmd.AddCommand(uploadCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// uploadCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// uploadCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 func doUpload(arg string) (string, error) {
@@ -84,18 +115,4 @@ func doUpload(arg string) (string, error) {
 	fmt.Fprintf(os.Stdout, "Uploaded image %q to: %q\n", file.Name(), location)
 
 	return location, nil
-}
-
-func init() {
-	rootCmd.AddCommand(uploadCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// uploadCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// uploadCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

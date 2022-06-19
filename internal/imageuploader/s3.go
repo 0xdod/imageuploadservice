@@ -19,6 +19,14 @@ import (
 
 var ErrInvalidFileType = errors.New("invalid file type")
 
+var validImageTypes = []string{
+	"image/jpg",
+	"image/png",
+	"image/jpeg",
+	//"image/webp",
+	"image/gif",
+}
+
 type awsS3 struct {
 	client   *s3.S3
 	uploader *s3manager.Uploader
@@ -36,7 +44,7 @@ func NewS3Uploader() *awsS3 {
 	}
 }
 
-func (as3 *awsS3) Upload(ctx context.Context, data []byte, name string) (location string, err error) {
+func (as3 *awsS3) Upload(ctx context.Context, name string, data []byte) (location string, err error) {
 	contentType := http.DetectContentType(data)
 
 	ss := strings.Split(name, ".")
@@ -53,7 +61,7 @@ func (as3 *awsS3) Upload(ctx context.Context, data []byte, name string) (locatio
 		Key:         aws.String(key),
 		Body:        bytes.NewBuffer(data),
 		ACL:         aws.String("public-read"),
-		ContentType: aws.String(""),
+		ContentType: aws.String(contentType),
 		//ContentEncoding: aws.String("base64"),
 	}
 
@@ -75,14 +83,6 @@ func prefixKey(prefix, key string) string {
 	}
 
 	return strings.TrimSuffix(prefix, "/") + "/" + key
-}
-
-var validImageTypes = []string{
-	"image/jpg",
-	"image/png",
-	"image/jpeg",
-	"image/webp",
-	"image/gif",
 }
 
 func extensionFromContentType(contentType string) string {

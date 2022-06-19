@@ -15,17 +15,17 @@ var uploader imageuploader.ImageUploader
 type Server struct {
 	srv *grpc.Server
 	UnimplementedImageUploaderServer
+	uploader imageuploader.ImageUploader
 }
 
 func NewServer() *Server {
 	return &Server{
-		srv: grpc.NewServer(),
+		srv:      grpc.NewServer(),
+		uploader: imageuploader.NewS3Uploader(),
 	}
 }
 
 func (s *Server) Start(port string) error {
-	uploader = imageuploader.NewS3Uploader()
-
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 
 	if err != nil {
@@ -33,7 +33,7 @@ func (s *Server) Start(port string) error {
 	}
 
 	// Register server method (actions the server will do)
-	RegisterImageUploaderServer(s.srv, &Server{})
+	RegisterImageUploaderServer(s.srv, s)
 
 	log.Printf("server listening at %v", lis.Addr())
 
@@ -41,7 +41,7 @@ func (s *Server) Start(port string) error {
 }
 
 func (s *Server) Upload(ctx context.Context, in *Image) (*ImageUploadReply, error) {
-	loc, err := uploader.Upload(ctx, in.Body, in.Name)
+	loc, err := s.uploader.Upload(ctx, in.Name, in.Body)
 
 	if err != nil {
 		return nil, err
